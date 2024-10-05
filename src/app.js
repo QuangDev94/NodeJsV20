@@ -11,8 +11,9 @@ app.use(morgan("dev"));
 app.use(helmet());
 // Compression (save bandwidth)
 app.use(compression());
-// init database
 
+// init database
+require("./dbs/init.mongodb");
 // init routes
 app.get("/", (req, res, next) => {
   const str = "Hello Bro";
