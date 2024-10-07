@@ -17,12 +17,12 @@
 
 const dev = {
   app: {
-    port: process.env.DEV_APP_PORT,
+    port: process.env.DEV_APP_PORT || 3000,
   },
   db: {
-    host: process.env.DEV_DATABASE_HOST,
-    port: process.env.DEV_DATABASE_PORT,
-    name: process.env.DEV_DATABASE_NAME,
+    host: process.env.DEV_DATABASE_HOST || "localhost",
+    port: process.env.DEV_DATABASE_PORT || 27017,
+    name: process.env.DEV_DATABASE_NAME || "shopDev",
   },
 };
 
@@ -32,8 +32,8 @@ const pro = {
   },
   db: {
     host: process.env.PRO_DATABASE_HOST,
-    port: process.env.PRO_DATABASE_PORT,
-    name: process.env.PRO_DATABASE_NAME,
+    port: process.env.PRO_DATABASE_PORT || 27017,
+    name: process.env.PRO_DATABASE_NAME || "shopPro",
   },
 };
 
