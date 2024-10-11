@@ -1,0 +1,13 @@
+# install http client extention
+@url_dev= http://localhost:3052/v1/api/
+
+### signup
+POST {{url_dev}}shop/signup
+Content-Type: application/json
+x-api-key: cbfaa32d52d2894aef6f193dced3e6dfe0102ad14c0f8b96ab63026f42c804eff946970a3400281196309961cd1df518832a3488a1ce34be4ec218a99225352f
+
+{
+    "name" : "Shop Dev",
+    "email" : "shopdev@gmail.com",
+    "password" : "abc123"
+}

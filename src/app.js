@@ -3,6 +3,8 @@ const express = require("express");
 const morgan = require("morgan");
 const helmet = require("helmet");
 const compression = require("compression");
+// const bodyParser = require("body-parser");
+
 const app = express();
 
 // init middlewares
@@ -12,17 +14,17 @@ app.use(morgan("dev"));
 app.use(helmet());
 // Compression (save bandwidth)
 app.use(compression());
+// Body-Parser (Handles post requests)
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// app.use(bodyParser.json());
 
 // init database
 require("./dbs/init.mongodb");
+
 // init routes
-app.get("/", (req, res, next) => {
-  const str = "Hello Bro";
-  return res.status(200).json({
-    message: "Welcome FanTipJs!",
-    metadata: str.repeat(10000000),
-  });
-});
+app.use("", require("./routes"));
 
 // handling errors
+
 module.exports = app;
