@@ -8,7 +8,7 @@ const KeyTokenService = require("./keyToken.service");
 const { createTokenPair } = require("../utils/auth/auth");
 const { getInforData } = require("../utils");
 const { BadRequestError, AuthFailureError } = require("../core/error.response");
-const { findByEmail } = require("./shop.service");
+const { findShopByEmail } = require("./shop.service");
 
 const RoleShop = {
   SHOP: "SHOP",
@@ -27,7 +27,7 @@ class AccessService {
    */
   static login = async ({ email, password, refreshToken = null }) => {
     // 1. check email in dbs
-    const foundShop = await findByEmail({ email });
+    const foundShop = await findShopByEmail({ email });
     if (!foundShop) throw new BadRequestError("Shop not registered");
     // 2. match password
     const matchPassword = bcrypt.compare(password, foundShop.password);
@@ -124,6 +124,10 @@ class AccessService {
       code: 200,
       metadata: null,
     };
+  };
+
+  static logout = async (keyStore) => {
+    return await KeyTokenService.removeKeyTokenById(keyStore._id);
   };
 }
 

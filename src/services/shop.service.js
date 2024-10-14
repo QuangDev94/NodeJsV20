@@ -2,7 +2,7 @@
 
 const shopModel = require("../models/shop.model");
 
-const findByEmail = async ({
+const findShopByEmail = async ({
   email,
   select = {
     email: 1,
@@ -15,4 +15,4 @@ const findByEmail = async ({
   return await shopModel.findOne({ email }).select(select).lean();
 };
 
-module.exports = { findByEmail };
+module.exports = { findShopByEmail };

@@ -1,5 +1,17 @@
 "use strict";
 const JWT = require("jsonwebtoken");
+const asyncHandler = require("../../helpers/asyncHandler");
+const {
+  AuthFailureError,
+  NotFoundError,
+} = require("../../core/error.response");
+const { findShopByShopId } = require("../../services/keyToken.service");
+
+const HEADER = {
+  CLIENT_ID: "x-client-id",
+  API_KEY: "x-api-key",
+  AUTHORIZATION: "authorization",
+};
 
 const createTokenPair = async (payload, privateKey, publicKey) => {
   try {
@@ -25,6 +37,27 @@ const createTokenPair = async (payload, privateKey, publicKey) => {
   }
 };
 
+const authentication = asyncHandler(async (req, res, next) => {
+  const shopId = req.headers[HEADER.CLIENT_ID];
+  if (!shopId) throw new AuthFailureError("Invalid ShopId Request");
+  const keyStore = await findShopByShopId(shopId);
+  if (!keyStore) throw new NotFoundError("Not Found ShopId in DBS");
+
+  const accessToken = req.headers[HEADER.AUTHORIZATION];
+  if (!accessToken) throw new AuthFailureError("Invalid AccessToken Request");
+
+  try {
+    const decodeShop = JWT.verify(accessToken, keyStore.publicKey);
+    if (shopId !== decodeShop.useId)
+      throw new AuthFailureError("Invalid AccessToken Verify");
+    req.keyStore = keyStore;
+    return next();
+  } catch (error) {
+    throw error;
+  }
+});
+
 module.exports = {
   createTokenPair,
+  authentication,
 };
