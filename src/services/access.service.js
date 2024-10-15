@@ -5,9 +5,13 @@ const bcrypt = require("bcrypt");
 // const crypto = require("crypto");
 const crypto = require("node:crypto");
 const KeyTokenService = require("./keyToken.service");
-const { createTokenPair } = require("../utils/auth/auth");
+const { createTokenPair, verifyJWT } = require("../utils/auth/auth");
 const { getInforData } = require("../utils");
-const { BadRequestError, AuthFailureError } = require("../core/error.response");
+const {
+  BadRequestError,
+  AuthFailureError,
+  ForbiddenError,
+} = require("../core/error.response");
 const { findShopByEmail } = require("./shop.service");
 
 const RoleShop = {
@@ -128,6 +132,59 @@ class AccessService {
 
   static logout = async (keyStore) => {
     return await KeyTokenService.removeKeyTokenById(keyStore._id);
+  };
+
+  static handlerRefreshToken = async (refreshToken) => {
+    const foundToken = await KeyTokenService.checkRefreshTokenExitsInRFUsed(
+      refreshToken,
+    );
+    if (foundToken) {
+      const { useId, email } = await verifyJWT(
+        refreshToken,
+        foundToken.privateKey,
+      );
+      console.log({ useId, email });
+      await KeyTokenService.removeKeyTokenByShopId(useId);
+      throw new ForbiddenError("Something went wrong happend !! pls relogin");
+    }
+
+    const holderToken = await KeyTokenService.checkRefreshTokenExitsInDbs(
+      refreshToken,
+    );
+    if (!holderToken) {
+      throw new AuthFailureError("Shop not registered 1");
+    }
+
+    const { useId, email } = await verifyJWT(
+      refreshToken,
+      holderToken.privateKey,
+    );
+    console.log("[2]--", { useId, email });
+
+    const foundShop = await findShopByEmail({ email });
+    if (!foundShop) {
+      throw new AuthFailureError("Shop not registered 2");
+    }
+
+    const tokens = await createTokenPair(
+      { useId, email },
+      holderToken.privateKey,
+      holderToken.publicKey,
+    );
+
+    await holderToken.updateOne({
+      $set: {
+        refreshToken: tokens.refreshToken,
+      },
+      $addToSet: {
+        refreshTokensUsed: refreshToken,
+      },
+    });
+
+    return {
+      user: { useId, email },
+      tokens,
+    };
   };
 }
 
